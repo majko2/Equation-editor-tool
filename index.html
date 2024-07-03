@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link href="fonts/fontawesome.5.10.0.min.css" rel="stylesheet" type='text/css'>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="grammar.js"></script>
+    <script src="main.js"></script>
+    <title>Equation editor</title>
+    <style>
+        body{
+            width: 100%;
+            background-color: black;
+        }
+
+        * {
+            color: white;
+            background-color: black;
+        }
+        .col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+            gap: 50px;
+        }
+
+        #out {
+            font-size: 48px;
+        }
+
+        #in {
+            font-size: 16px;
+            width: min(800px, 80vw);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <input type="text" value="" id="in" oninput="update()">
+                <span id="out">\(PV=nRT\)</span>
+                <pre id="jsonOut"></pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
