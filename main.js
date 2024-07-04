@@ -1,23 +1,33 @@
 var inputField = document.getElementById('in')
 var formulaHolder = document.getElementById('out')
-var jsonOutput = document.getElementById('jsonOut')
-var formula;
+var suggestionsDiv = document.getElementById('suggestions')
+var formula, suggestions;
 
 function update() {
     let latex = inputField.value.replace('\\)', '')
     displayLatex(latex)
+    console.log()
 }
 
 function displayLatex(latex) {
     formula = parse(latex)
     formulaHolder.innerHTML = '\\( ' + latex + ' \\)'
+    suggestions = FindSuggestions(formula)
+    suggestionsDiv.innerHTML = ''
+    suggestions.forEach(sug => {
+        let e = document.createElement('button')
+        e.classList.add('btn', 'btn-primary')
+        e.innerHTML = sug[1].name + ' \\(' + sug[0].makeLatex() + '\\)'
+        e.addEventListener('click', () => ApplyAt(sug[0], sug[1]))
+        suggestionsDiv.appendChild(e)
+    })
     MathJax.typeset()
-    jsonOutput.innerHTML = parse(latex).toString()
 }
 
 function parse(string)
 {
     let mathml = new DOMParser().parseFromString(MathJax.tex2mml(string), "text/xml").childNodes[0]
+    console.log(mathml)
     return processMathML(mathml)
 }
 
@@ -49,12 +59,44 @@ function processMathML(element) {
 }
 
 function Expand() {
-    let dict = {}
-    if(!Unify(rules[0][0], formula, dict)) {
-        console.warn('Failed to unify.')
-        return
+    displayLatex(Convert(formula, rules[0]).makeLatex())
+}
+
+function ApplyAt(element, rule) {
+    let young = Convert(element, rule)
+    if(element == formula) {
+        formula = young
     }
-    displayLatex(Apply(rules[0][1], dict).makeLatex())
+    else {
+        FindAndReplace(formula, element, young)
+    }
+    displayLatex(formula.makeLatex())
+}
+
+function FindAndReplace(element, old, young) {
+    if(element.constructor.name != 'Operation') return
+    for (let i = 0; i < element.elements.length; i++) {
+        const e = element.elements[i];
+        if(e == old) {
+            element.elements[i] = young
+            return
+        }
+        FindAndReplace(e, old, young)
+    }
+}
+
+function FindSuggestions(element) {
+    let result = []
+    rules.forEach(rule => {
+        if(Unify(rule.src, element, {}))
+            result.push([element, rule])
+    });
+    if(element.constructor.name == 'Operation') {
+        element.elements.forEach(e => {
+            result.push(...FindSuggestions(e))
+        })
+    }
+    return result
 }
 
 function Unify(pattern, expr, dict) {
@@ -92,9 +134,24 @@ function Apply(pattern, dict) {
     return pattern
 }
 
+function Convert(expr, rule) {
+    let dict = {}
+    if(!Unify(rule.src, expr, dict)) {
+        console.warn('Failed to unify.')
+        return
+    }
+    return Apply(rule.dest, dict)
+}
+
 rules = [
-    [
-        new Operation([new MetaExpression(0), new Operation([new MetaExpression(1), new MetaExpression(2)], 'addition')], 'multiplication'),
-        new Operation([new Operation([new MetaExpression(0), new MetaExpression(1)], 'multiplication'), new Operation([new MetaExpression(0), new MetaExpression(2)], 'multiplication')], 'addition')
-    ]
+    {
+        "src": new Operation([new MetaExpression(0), new Operation([new MetaExpression(1), new MetaExpression(2)], 'addition')], 'multiplication'),
+        "dest": new Operation([new Operation([new MetaExpression(0), new MetaExpression(1)], 'multiplication'), new Operation([new MetaExpression(0), new MetaExpression(2)], 'multiplication')], 'addition'),
+        "name": "Expand"
+    },
+    {
+        "src": new Operation([new Operation([new MetaExpression(1), new MetaExpression(2)], 'addition'), new MetaExpression(0)], 'multiplication'),
+        "dest": new Operation([new Operation([new MetaExpression(1), new MetaExpression(0)], 'multiplication'), new Operation([new MetaExpression(2), new MetaExpression(0)], 'multiplication')], 'addition'),
+        "name": "Expand from right"
+    }
 ]
