@@ -27,10 +27,13 @@ var opAlias = {
 }
 
 class Expression {
+    disabled_for_clicking = false
+
     toString() {}
     equals(other) {}
     repr() {}
     makeLatex() {}
+    onClick(){}
 }
 
 class NumberExp extends Expression {
@@ -83,59 +86,22 @@ class Variable extends Expression {
     }
 }
 
-class Operation extends Expression {
-    elements
-    opType
+class Sum extends Expression {
 
-    constructor(elements, type) {
-        super()
-        this.elements = elements
-        this.opType = type
-    }
-    
-    toString() {
-        return '(' + this.elements.map((x) => x.toString()).join(operations[this.opType].operator) + ')'
-    }
-
-    equals(other) {
-        if(typeof(other) != Operation) return false
-        if(this.opType != other.opType) return false
-        if(this.elements.length != other.elements.length) return false
-        for (let i = 0; i < this.elements.length; i++) {
-            if(!this.elements[i].equals(other.elements[i])) return false
-        }
-        return true
-    }
-
-    repr() {
-        return 'new Operation([' + this.elements.map((x) => x.repr()).join(', ') + `], '${this.opType}')`
-    }
-
-    makeLatex(requireFence = false) {
-        if(this.opType == 'division') return `\\frac{${this.elements[0].makeLatex()}}{${this.elements[1].makeLatex()}}`
-        let op = operations[this.opType].latexOp
-        if(op == undefined) op = operations[this.opType].operator
-        let result = this.elements.map((x) => x.makeLatex(this.opType == 'subtraction' || this.opType == 'multiplication')).join(op)
-        if(operations[this.opType].requireFence && requireFence) {
-            result = '(' + result + ')'
-        }
-        return result
-    }
 }
 
-class MetaExpression extends Expression {
-    identifier
+class Product extends Expression {
 
-    constructor(identifier) {
-        super()
-        this.identifier = identifier
-    }
+}
 
-    toString() {
-        return '$' + this.identifier
-    }
+class UnaryOperation extends Expression {
 
-    repr() {
-        return `new MetaExpression(${this.identifier})`
-    }
+}
+
+class Power extends Expression {
+
+}
+
+class Root extends Expression {
+
 }

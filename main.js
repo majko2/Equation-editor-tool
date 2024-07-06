@@ -26,9 +26,12 @@ function displayLatex(latex) {
 
 function parse(string)
 {
+
+    /*
     let mathml = new DOMParser().parseFromString(MathJax.tex2mml(string), "text/xml").childNodes[0]
     console.log(mathml)
     return processMathML(mathml)
+    */
 }
 
 function processMathML(element) {
