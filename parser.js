@@ -70,7 +70,10 @@ function parse(string)
     {
         throw new Error('Error while parsing LaTeX: missing ' + parentheses_stack[parentheses_stack.length-1])
     }
+}
 
+function parse_parent_free(string)
+{
     var tokens = [];
     var current_token = '';
     var number = false;
